@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/zapscloud/golib-dbutils/db_common"
+	"github.com/zapscloud/golib-platform/platform_common"
 )
 
 // Business module tables =================================
@@ -22,16 +23,16 @@ const (
 
 // Business module table fields
 const (
-	FLD_BUSINESS_ID           = "business_id"
-	FLD_BUSINESS_NAME         = "bussiness_name"
-	FLD_BUSINESS_COMM_EMAILID = "bussiness_comm_email_id" // Communication EMailId
+	FLD_BUSINESS_ID      = platform_common.FLD_BUSINESS_ID
+	FLD_BUSINESS_NAME    = platform_common.FLD_BUSINESS_NAME
+	FLD_BUSINESS_EMAILID = platform_common.FLD_BUSINESS_EMAILID
 
-	FLD_USER_ID    = "user_id"
+	FLD_USER_ID    = platform_common.FLD_APP_USER_ID
 	FLD_USER_ROLES = "user_roles"
 
-	FLD_ROLE_ID   = "role_id"
-	FLD_ROLE_NAME = "role_name"
-	FLD_ROLD_DESC = "role_description"
+	FLD_ROLE_ID   = platform_common.FLD_APP_ROLE_ID
+	FLD_ROLE_NAME = platform_common.FLD_APP_ROLE_NAME
+	FLD_ROLD_DESC = platform_common.FLD_APP_ROLE_DESC
 
 	FLD_APP_ACCESS_ID  = "app_access_id"
 	FLD_APP_CONTACT_ID = "app_contact_id"
