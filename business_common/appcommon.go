@@ -2,19 +2,22 @@ package business_common
 
 import (
 	"log"
+
+	"github.com/zapscloud/golib-dbutils/db_common"
 )
 
 // Business module tables =================================
 const (
-	DbAppAccess   = "app_access"
-	DbAppContacts = "app_contacts"
+	DbPrefix      = db_common.DB_COLLECTION_PREFIX
+	DbAppAccess   = DbPrefix + "app_access"
+	DbAppContacts = DbPrefix + "app_contacts"
 
-	DbAppSites       = "app_sites"
-	DbAppTerritories = "app_territories"
+	DbAppSites       = DbPrefix + "app_sites"
+	DbAppTerritories = DbPrefix + "app_territories"
 
-	DbBusinessProfiles = "business_profiles"
-	DbBusinessRoles    = "business_roles"
-	DbBusinessUsers    = "business_users"
+	DbBusinessProfiles = DbPrefix + "business_profiles"
+	DbBusinessRoles    = DbPrefix + "business_roles"
+	DbBusinessUsers    = DbPrefix + "business_users"
 )
 
 // Business module table fields
