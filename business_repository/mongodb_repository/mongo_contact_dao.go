@@ -73,7 +73,9 @@ func (p *ContactMongoDBDao) List(filter string, sort string, skip int64, limit i
 		opts.SetLimit(limit)
 	}
 
-	filterdoc = append(filterdoc, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	filterdoc = append(filterdoc,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 	log.Println("Parameter values ", filterdoc, opts)
 	cursor, err := collection.Find(ctx, filterdoc, opts)
 	if err != nil {
@@ -104,7 +106,9 @@ func (p *ContactMongoDBDao) List(filter string, sort string, skip int64, limit i
 		return nil, err
 	}
 
-	basefilterdoc := bson.D{{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID}}
+	basefilterdoc := bson.D{
+		{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		{Key: db_common.FLD_IS_DELETED, Value: false}}
 	totalcount, err := collection.CountDocuments(ctx, basefilterdoc)
 	if err != nil {
 		return nil, err
@@ -135,7 +139,9 @@ func (p *ContactMongoDBDao) Get(contact_id string) (utils.Map, error) {
 
 	filter := bson.D{{Key: business_common.FLD_APP_CONTACT_ID, Value: contact_id}, {}}
 
-	filter = append(filter, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	filter = append(filter,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 
 	log.Println("Get:: Got filter ", filter)
 
@@ -171,7 +177,9 @@ func (p *ContactMongoDBDao) Find(filter string) (utils.Map, error) {
 	if err != nil {
 		fmt.Println("Error on filter Unmarshal", err)
 	}
-	bfilter = append(bfilter, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	bfilter = append(bfilter,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 
 	log.Println("Find:: Got filter ", bfilter)
 	singleResult := collection.FindOne(ctx, bfilter)

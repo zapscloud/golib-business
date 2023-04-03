@@ -65,7 +65,9 @@ func (p *BusinessMongoDBDao) Get(businessid string) (utils.Map, error) {
 	collection, ctx, err := mongo_utils.GetMongoDbCollection(p.client, business_common.DbBusinessProfiles)
 	log.Println("Find:: Got Collection ")
 
-	filter := bson.D{{Key: business_common.FLD_BUSINESS_ID, Value: businessid}, {}}
+	filter := bson.D{
+		{Key: business_common.FLD_BUSINESS_ID, Value: businessid},
+		{Key: db_common.FLD_IS_DELETED, Value: false}, {}}
 
 	log.Println("Find:: Got filter ", filter)
 
@@ -101,7 +103,9 @@ func (p *BusinessMongoDBDao) Find(filter string) (utils.Map, error) {
 	if err != nil {
 		fmt.Println("Error on filter Unmarshal", err)
 	}
-	bfilter = append(bfilter, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	bfilter = append(bfilter,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 
 	log.Println("Find:: Got filter ", bfilter)
 	singleResult := collection.FindOne(ctx, bfilter)

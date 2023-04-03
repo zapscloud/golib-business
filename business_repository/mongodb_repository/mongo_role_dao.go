@@ -106,7 +106,9 @@ func (p *RoleMongoDBDao) List(filter string, sort string, skip int64, limit int6
 		return nil, err
 	}
 
-	basefilterdoc := bson.D{{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID}}
+	basefilterdoc := bson.D{
+		{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		{Key: db_common.FLD_IS_DELETED, Value: false}}
 	totalcount, err := collection.CountDocuments(ctx, basefilterdoc)
 	if err != nil {
 		return nil, err

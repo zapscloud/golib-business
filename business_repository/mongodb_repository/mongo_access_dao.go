@@ -85,7 +85,9 @@ func (p *AccessMongoDBDao) List(sys_filter string, filter string, sort string, s
 		opts.SetLimit(limit)
 	}
 
-	filterdoc = append(filterdoc, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	filterdoc = append(filterdoc,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 	log.Println("Parameter values ", filterdoc, opts)
 	cursor, err := collection.Find(ctx, filterdoc, opts)
 	if err != nil {
@@ -117,10 +119,10 @@ func (p *AccessMongoDBDao) List(sys_filter string, filter string, sort string, s
 	}
 
 	// Add base business filter
-	basefilterdoc := bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID}
-	sysfilterdoc = append(sysfilterdoc, basefilterdoc)
-
-	totalcount, err := collection.CountDocuments(ctx, sysfilterdoc)
+	basefilterdoc := bson.D{
+		{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		{Key: db_common.FLD_IS_DELETED, Value: false}}
+	totalcount, err := collection.CountDocuments(ctx, basefilterdoc)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +152,9 @@ func (p *AccessMongoDBDao) Get(accessid string) (utils.Map, error) {
 
 	filter := bson.D{{Key: business_common.FLD_APP_ACCESS_ID, Value: accessid}, {}}
 
-	filter = append(filter, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	filter = append(filter,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 
 	log.Println("Get:: Got filter ", filter)
 
@@ -186,7 +190,9 @@ func (p *AccessMongoDBDao) Find(filter string) (utils.Map, error) {
 	if err != nil {
 		fmt.Println("Error on filter Unmarshal", err)
 	}
-	bfilter = append(bfilter, bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID})
+	bfilter = append(bfilter,
+		bson.E{Key: business_common.FLD_BUSINESS_ID, Value: p.businessID},
+		bson.E{Key: db_common.FLD_IS_DELETED, Value: false})
 
 	log.Println("Find:: Got filter ", bfilter)
 	singleResult := collection.FindOne(ctx, bfilter)
