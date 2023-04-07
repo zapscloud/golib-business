@@ -70,7 +70,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	// Initialize other Service
 	p.initializeAppService()
 
-	dataBusiness, err := p.daoPlatformBusiness.GetDetails(businessId)
+	dataBusiness, err := p.daoPlatformBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given app_business_id is not exist"}
 		return nil, err
@@ -79,7 +79,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	businessRegion := dataBusiness[platform_common.FLD_BUSINESS_REGION_ID].(string)
 
 	daoRegion := platform_repository.NewRegionDao(p.GetClient())
-	dataRegion, err := daoRegion.GetDetails(businessRegion)
+	dataRegion, err := daoRegion.Get(businessRegion)
 	if err != nil {
 		log.Println("NewBusinessService Get Region details Error ", err)
 		return nil, err

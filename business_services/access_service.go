@@ -68,7 +68,7 @@ func NewAccessService(props utils.Map) (AccessService, error) {
 	// Initialize other Service
 	p.initializeService()
 
-	_, err = p.daoBusiness.GetDetails(businessId)
+	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given app_business_id is not exist"}
 		return nil, err
@@ -170,7 +170,7 @@ func (p *accessBaseService) GrantPermission(indata utils.Map) (utils.Map, error)
 	}
 
 	if okSysRoleId {
-		dataRole, err := p.daoSysRole.GetDetails(valSysRoleId.(string))
+		dataRole, err := p.daoSysRole.Get(valSysRoleId.(string))
 		log.Println("GrantPermission: RoleId not found  ", dataRole, err)
 		if err != nil {
 			err := &utils.AppError{ErrorCode: funcode + "04", ErrorMsg: "RoleId not found ", ErrorDetail: "App RoleId not found "}
