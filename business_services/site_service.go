@@ -56,7 +56,7 @@ func NewSiteService(props utils.Map) (SiteService, error) {
 	}
 	log.Printf("SiteMongoService ")
 	// Verify whether the business id data passed
-	businessId, err := utils.IsMemberExist(props, business_common.FLD_BUSINESS_ID)
+	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
 		return nil, err
 	}
