@@ -143,9 +143,6 @@ func (p *roleBaseService) Create(indata utils.Map) (utils.Map, error) {
 		return nil, err
 	}
 
-	// Remove the fields which should be created in database
-	delete(indata, db_common.FLD_IS_AUTO_GENERATED)
-
 	insertResult, err := p.daoRole.Create(indata)
 	if err != nil {
 		return nil, err
@@ -164,7 +161,7 @@ func (p *roleBaseService) Update(roleid string, indata utils.Map) (utils.Map, er
 		return data, err
 	}
 
-	// Remove the fields which should be created in database
+	// Remove the fields which should not be updated in database
 	delete(indata, db_common.FLD_IS_AUTO_GENERATED)
 
 	data, err = p.daoRole.Update(roleid, indata)
