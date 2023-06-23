@@ -72,7 +72,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 
 	dataBusiness, err := p.daoPlatformBusiness.Get(businessId)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given app_business_id is not exist"}
+		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
 		return nil, err
 	}
 
@@ -205,7 +205,7 @@ func (p *businessBaseService) GetDetails() (utils.Map, error) {
 
 	data, err := p.daoBusiness.Get(p.businessID)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Invalid app_user_id", ErrorDetail: "Given app_user_id is not exist"}
+		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Invalid user_id", ErrorDetail: "Given user_id is not exist"}
 		return nil, err
 	}
 

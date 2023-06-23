@@ -67,7 +67,7 @@ func NewRoleService(props utils.Map) (RoleService, error) {
 
 	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given app_business_id is not exist"}
+		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
 		return nil, err
 	}
 
