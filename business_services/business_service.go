@@ -61,7 +61,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	// Assign the BusinessId
@@ -73,7 +73,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	dataBusiness, err := p.daoPlatformBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	businessRegion := dataBusiness[platform_common.FLD_BUSINESS_REGION_ID].(string)
@@ -82,24 +82,21 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	dataRegion, err := daoRegion.Get(businessRegion)
 	if err != nil {
 		log.Println("NewBusinessService Get Region details Error ", err)
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_SERVER]; !dataok {
-		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Missing MongoDB Values", ErrorDetail: "Missing MongoDB Values for the given region details"}
-		return nil, err
-	}
-	if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_NAME]; !dataok {
-		err := &utils.AppError{ErrorCode: funcode + "03", ErrorMsg: "Missing MongoDB Values", ErrorDetail: "Missing MongoDB Values for the given region details"}
-		return nil, err
-	}
-	if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_USER]; !dataok {
-		err := &utils.AppError{ErrorCode: funcode + "04", ErrorMsg: "Missing MongoDB Values", ErrorDetail: "Missing MongoDB Values for the given region details"}
-		return nil, err
-	}
-	if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_SECRET]; !dataok {
-		err := &utils.AppError{ErrorCode: funcode + "05", ErrorMsg: "Missing MongoDB Values", ErrorDetail: "Missing MongoDB Values for the given region details"}
-		return nil, err
+		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
+		return p.errorReturn(err)
+	} else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_NAME]; !dataok {
+		err := &utils.AppError{ErrorCode: funcode + "03", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
+		return p.errorReturn(err)
+	} else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_USER]; !dataok {
+		err := &utils.AppError{ErrorCode: funcode + "04", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
+		return p.errorReturn(err)
+	} else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_SECRET]; !dataok {
+		err := &utils.AppError{ErrorCode: funcode + "05", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
+		return p.errorReturn(err)
 	}
 
 	dbtype := props[db_common.DB_TYPE].(db_common.DatabaseType)
@@ -128,7 +125,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	if err != nil {
 		// log.Fatal(err)
 		log.Println("NewBusinessService Connection Error ", err)
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	p.initializeService()
@@ -238,4 +235,10 @@ func (p *businessBaseService) Delete() error {
 	}
 	log.Printf("BusinessService::Delete - End %v", result)
 	return nil
+}
+
+func (p *businessBaseService) errorReturn(err error) (BusinessService, error) {
+	// Close the Database Connection
+	p.CloseDatabaseService()
+	return nil, err
 }

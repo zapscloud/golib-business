@@ -58,7 +58,7 @@ func NewSiteService(props utils.Map) (SiteService, error) {
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	// Assign the BusinessId
@@ -68,7 +68,7 @@ func NewSiteService(props utils.Map) (SiteService, error) {
 	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	p.child = &p
@@ -176,4 +176,10 @@ func (p *siteBaseService) Delete(site_id string) error {
 
 	log.Printf("SiteService::Delete - End %v", result)
 	return nil
+}
+
+func (p *siteBaseService) errorReturn(err error) (SiteService, error) {
+	// Close the Database Connection
+	p.CloseDatabaseService()
+	return nil, err
 }

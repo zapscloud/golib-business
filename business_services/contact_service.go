@@ -59,7 +59,7 @@ func NewContactService(props utils.Map) (ContactService, error) {
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	// Assign the BusinessId
@@ -71,7 +71,7 @@ func NewContactService(props utils.Map) (ContactService, error) {
 	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
-		return nil, err
+		return p.errorReturn(err)
 	}
 
 	p.child = &p
@@ -179,4 +179,10 @@ func (p *contactBaseService) Delete(contact_id string) error {
 
 	log.Printf("ContactService::Delete - End %v", result)
 	return nil
+}
+
+func (p *contactBaseService) errorReturn(err error) (ContactService, error) {
+	// Close the Database Connection
+	p.CloseDatabaseService()
+	return nil, err
 }
