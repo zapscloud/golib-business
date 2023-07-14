@@ -126,7 +126,9 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	// 	return p.errorReturn(err)
 	// }
 
-	// p.initializeService()
+	// Initialise Services
+	p.initializeService()
+
 	p.child = &p
 
 	return &p, err
