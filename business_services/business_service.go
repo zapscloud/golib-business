@@ -202,7 +202,7 @@ func (p *businessBaseService) GetDetails() (utils.Map, error) {
 
 	data, err := p.daoBusiness.Get(p.businessID)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Invalid user_id", ErrorDetail: "Given user_id is not exist"}
+		err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Invalid businessId", ErrorDetail: "Given businessId is not exist"}
 		return nil, err
 	}
 
