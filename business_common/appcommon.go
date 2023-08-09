@@ -34,7 +34,7 @@ const (
 
 	FLD_ROLE_ID   = platform_common.FLD_APP_ROLE_ID
 	FLD_ROLE_NAME = platform_common.FLD_APP_ROLE_NAME
-	FLD_ROLD_DESC = platform_common.FLD_APP_ROLE_DESC
+	FLD_ROLE_DESC = platform_common.FLD_APP_ROLE_DESC
 
 	FLD_APP_ACCESS_ID  = "app_access_id"
 	FLD_APP_CONTACT_ID = "app_contact_id"
@@ -44,6 +44,7 @@ const (
 
 	FLD_USERTYPE_ID   = "usertype_id"
 	FLD_USERTYPE_NAME = "usertype_name"
+	FLD_USERTYPE_DESC = "usertype_desc"
 )
 
 func init() {
