@@ -19,6 +19,8 @@ const (
 	DbBusinessProfiles = DbPrefix + "business_profiles"
 	DbBusinessRoles    = DbPrefix + "business_roles"
 	DbBusinessUsers    = DbPrefix + "business_users"
+
+	DbBusinessUserTypes = DbPrefix + "business_user_types"
 )
 
 // Business module table fields
@@ -39,6 +41,9 @@ const (
 
 	FLD_APP_SITE_ID      = "app_site_id"
 	FLD_APP_TERRITORY_ID = "app_territory_id"
+
+	FLD_USERTYPE_ID   = "usertype_id"
+	FLD_USERTYPE_NAME = "usertype_name"
 )
 
 func init() {
