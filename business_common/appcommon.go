@@ -48,6 +48,10 @@ const (
 	FLD_USERTYPE_DESC = "usertype_desc"
 )
 
+const (
+	DEF_BUSINESS_TIMEZONE = "Asia/Calcutta"
+)
+
 func init() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Lmicroseconds)
 
