@@ -25,9 +25,10 @@ const (
 
 // Business module table fields
 const (
-	FLD_BUSINESS_ID      = platform_common.FLD_BUSINESS_ID
-	FLD_BUSINESS_NAME    = platform_common.FLD_BUSINESS_NAME
-	FLD_BUSINESS_EMAILID = platform_common.FLD_BUSINESS_EMAILID
+	FLD_BUSINESS_ID        = platform_common.FLD_BUSINESS_ID
+	FLD_BUSINESS_NAME      = platform_common.FLD_BUSINESS_NAME
+	FLD_BUSINESS_EMAILID   = platform_common.FLD_BUSINESS_EMAILID
+	FLD_BUSINESS_TIME_ZONE = "time_zone"
 
 	FLD_USER_ID    = platform_common.FLD_APP_USER_ID
 	FLD_USER_ROLES = "user_roles"
