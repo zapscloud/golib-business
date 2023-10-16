@@ -30,7 +30,7 @@ type AccessService interface {
 // AccessBaseService - Accesss Service structure
 type accessBaseService struct {
 	db_utils.DatabaseService
-	regionDB  db_utils.DatabaseService
+	dbRegion  db_utils.DatabaseService
 	daoAccess business_repository.AccessDao
 	daoUser   business_repository.UserDao
 	daoRole   business_repository.RoleDao
@@ -95,19 +95,19 @@ func NewAccessService(props utils.Map) (AccessService, error) {
 func (p *accessBaseService) EndService() {
 	log.Printf("EndAccessService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *accessBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -117,10 +117,10 @@ func (p *accessBaseService) openRegionDatabaseService(props utils.Map) error {
 
 func (p *accessBaseService) initializeService() {
 	log.Printf("AccessService:: GetBusinessDao ")
-	p.daoAccess = business_repository.NewAccessDao(p.regionDB.GetClient(), p.businessID)
-	p.daoUser = business_repository.NewUserDao(p.regionDB.GetClient(), p.businessID)
-	p.daoRole = business_repository.NewRoleDao(p.regionDB.GetClient(), p.businessID)
-	p.daoSite = business_repository.NewSiteDao(p.regionDB.GetClient(), p.businessID)
+	p.daoAccess = business_repository.NewAccessDao(p.dbRegion.GetClient(), p.businessID)
+	p.daoUser = business_repository.NewUserDao(p.dbRegion.GetClient(), p.businessID)
+	p.daoRole = business_repository.NewRoleDao(p.dbRegion.GetClient(), p.businessID)
+	p.daoSite = business_repository.NewSiteDao(p.dbRegion.GetClient(), p.businessID)
 
 	p.daoSysUser = platform_repository.NewSysUserDao(p.GetClient())
 	p.daoSysRole = platform_repository.NewSysRoleDao(p.GetClient())

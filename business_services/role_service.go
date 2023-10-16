@@ -32,7 +32,7 @@ type RoleService interface {
 // RoleBaseService - Roles Service structure
 type roleBaseService struct {
 	db_utils.DatabaseService
-	regionDB    db_utils.DatabaseService
+	dbRegion    db_utils.DatabaseService
 	daoRole     business_repository.RoleDao
 	daoBusiness platform_repository.BusinessDao
 	child       RoleService
@@ -89,19 +89,19 @@ func NewRoleService(props utils.Map) (RoleService, error) {
 func (p *roleBaseService) EndService() {
 	log.Printf("EndRoleService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *roleBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (p *roleBaseService) openRegionDatabaseService(props utils.Map) error {
 
 func (p *roleBaseService) initializeService() {
 	log.Printf("RoleMongoService:: GetBusinessDao ")
-	p.daoRole = business_repository.NewRoleDao(p.regionDB.GetClient(), p.businessID)
+	p.daoRole = business_repository.NewRoleDao(p.dbRegion.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 

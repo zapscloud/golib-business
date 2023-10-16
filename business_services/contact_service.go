@@ -31,7 +31,7 @@ type ContactService interface {
 // ContactBaseService - Contacts Service structure
 type contactBaseService struct {
 	db_utils.DatabaseService
-	regionDB    db_utils.DatabaseService
+	dbRegion    db_utils.DatabaseService
 	daoContact  business_repository.ContactDao
 	daoBusiness platform_repository.BusinessDao
 	child       ContactService
@@ -87,19 +87,19 @@ func NewContactService(props utils.Map) (ContactService, error) {
 func (p *contactBaseService) EndService() {
 	log.Printf("EndContactMongoService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *contactBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (p *contactBaseService) openRegionDatabaseService(props utils.Map) error {
 
 func (p *contactBaseService) initializeService() {
 	log.Printf("ContactMongoService:: GetBusinessDao ")
-	p.daoContact = business_repository.NewContactDao(p.regionDB.GetClient(), p.businessID)
+	p.daoContact = business_repository.NewContactDao(p.dbRegion.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 

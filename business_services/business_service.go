@@ -29,7 +29,7 @@ type BusinessService interface {
 // BusinessService - Users Service structure
 type businessBaseService struct {
 	db_utils.DatabaseService
-	regionDB            db_utils.DatabaseService
+	dbRegion            db_utils.DatabaseService
 	daoBusiness         business_repository.BusinessDao
 	daoUser             business_repository.UserDao
 	daoContact          business_repository.ContactDao
@@ -61,7 +61,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 		log.Println("NewBusinessMongoService App Connection Error ", err)
 		return nil, err
 	}
-	
+
 	// Open RegionDB Service
 	err = p.openRegionDatabaseService(props)
 	if err != nil {
@@ -71,7 +71,7 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 
 	// Assign the BusinessId
 	p.businessID = businessId
-	
+
 	// Initialise Services
 	p.initializeService()
 
@@ -90,19 +90,19 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 func (p *businessBaseService) EndService() {
 	log.Printf("EndBusinessMongoService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *businessBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -115,9 +115,9 @@ func (p *businessBaseService) initializeService() {
 	p.daoSysUser = platform_repository.NewSysUserDao(p.GetClient())
 	p.daoPlatformBusiness = platform_repository.NewBusinessDao(p.GetClient())
 
-	p.daoBusiness = business_repository.NewBusinessDao(p.regionDB.GetClient(), p.businessID)
-	p.daoUser = business_repository.NewUserDao(p.regionDB.GetClient(), p.businessID)
-	p.daoContact = business_repository.NewContactDao(p.regionDB.GetClient(), p.businessID)
+	p.daoBusiness = business_repository.NewBusinessDao(p.dbRegion.GetClient(), p.businessID)
+	p.daoUser = business_repository.NewUserDao(p.dbRegion.GetClient(), p.businessID)
+	p.daoContact = business_repository.NewContactDao(p.dbRegion.GetClient(), p.businessID)
 }
 
 // Create - Create Service

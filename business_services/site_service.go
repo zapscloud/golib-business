@@ -31,7 +31,7 @@ type SiteService interface {
 // SiteBaseService - Sites Service structure
 type siteBaseService struct {
 	db_utils.DatabaseService
-	regionDB    db_utils.DatabaseService
+	dbRegion    db_utils.DatabaseService
 	daoSite     business_repository.SiteDao
 	daoBusiness platform_repository.BusinessDao
 	child       SiteService
@@ -88,19 +88,19 @@ func NewSiteService(props utils.Map) (SiteService, error) {
 func (p *siteBaseService) EndService() {
 	log.Printf("EndSiteService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *siteBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (p *siteBaseService) openRegionDatabaseService(props utils.Map) error {
 
 func (p *siteBaseService) initializeService() {
 	log.Printf("SiteService:: GetBusinessDao ")
-	p.daoSite = business_repository.NewSiteDao(p.regionDB.GetClient(), p.businessID)
+	p.daoSite = business_repository.NewSiteDao(p.dbRegion.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 

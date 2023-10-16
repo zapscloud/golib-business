@@ -32,7 +32,7 @@ type UserTypeService interface {
 // userTypeBaseService - Accounts Service structure
 type userTypeBaseService struct {
 	db_utils.DatabaseService
-	regionDB            db_utils.DatabaseService
+	dbRegion            db_utils.DatabaseService
 	daoUserType         business_repository.UserTypeDao
 	daoPlatformBusiness platform_repository.BusinessDao
 	child               UserTypeService
@@ -73,7 +73,7 @@ func NewUserTypeService(props utils.Map) (UserTypeService, error) {
 	p.businessID = businessId
 
 	// Instantiate other services
-	p.daoUserType = business_repository.NewUserTypeDao(p.regionDB.GetClient(), businessId)
+	p.daoUserType = business_repository.NewUserTypeDao(p.dbRegion.GetClient(), businessId)
 	p.daoPlatformBusiness = platform_repository.NewBusinessDao(p.GetClient())
 
 	_, err = p.daoPlatformBusiness.Get(p.businessID)
@@ -92,19 +92,19 @@ func NewUserTypeService(props utils.Map) (UserTypeService, error) {
 
 func (p *userTypeBaseService) EndService() {
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *userTypeBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}

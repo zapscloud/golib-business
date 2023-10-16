@@ -31,7 +31,7 @@ type TerritoryService interface {
 // TerritoryBaseService - Territorys Service structure
 type territoryBaseService struct {
 	db_utils.DatabaseService
-	regionDB     db_utils.DatabaseService
+	dbRegion     db_utils.DatabaseService
 	daoTerritory business_repository.TerritoryDao
 	daoBusiness  platform_repository.BusinessDao
 	child        TerritoryService
@@ -45,7 +45,7 @@ func init() {
 func NewTerritoryService(props utils.Map) (TerritoryService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 
-	log.Printf("SiteService::Start ")
+	log.Print("TerritoryService::Start ")
 
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
@@ -87,21 +87,21 @@ func NewTerritoryService(props utils.Map) (TerritoryService, error) {
 
 // TerritoryBaseService - Close all the services
 func (p *territoryBaseService) EndService() {
-	log.Printf("EndSiteService ")
+	log.Printf("EndTerritoryService ")
 	p.CloseDatabaseService()
-	p.regionDB.CloseDatabaseService()
+	p.dbRegion.CloseDatabaseService()
 }
 
 func (p *territoryBaseService) openRegionDatabaseService(props utils.Map) error {
 
 	// Get Region and Tenant Database Information
-	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
 	if err != nil {
 		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return err
 	}
 
-	err = p.regionDB.OpenDatabaseService(regionProps)
+	err = p.dbRegion.OpenDatabaseService(propsRegion)
 	if err != nil {
 		return err
 	}
@@ -110,8 +110,8 @@ func (p *territoryBaseService) openRegionDatabaseService(props utils.Map) error 
 }
 
 func (p *territoryBaseService) initializeService() {
-	log.Printf("SiteService:: GetBusinessDao ")
-	p.daoTerritory = business_repository.NewSiteDao(p.regionDB.GetClient(), p.businessID)
+	log.Printf("TerritoryService:: GetBusinessDao ")
+	p.daoTerritory = business_repository.NewSiteDao(p.dbRegion.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 
