@@ -27,9 +27,10 @@ type AccessService interface {
 	EndService()
 }
 
-// LoyaltyCardService - Accesss Service structure
+// AccessBaseService - Accesss Service structure
 type accessBaseService struct {
 	db_utils.DatabaseService
+	regionDB  db_utils.DatabaseService
 	daoAccess business_repository.AccessDao
 	daoUser   business_repository.UserDao
 	daoRole   business_repository.RoleDao
@@ -50,23 +51,24 @@ func NewAccessService(props utils.Map) (AccessService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 	log.Printf("AccessService :: Start")
 
-	// Get Region and Tenant Database Information
-	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	// Verify whether the business id data passed
+	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return nil, err
 	}
 
 	p := accessBaseService{}
+	// Open Database Service
 	err = p.OpenDatabaseService(props)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	// Verify whether the business id data passed
-	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
+	// Open RegionDB Service
+	err = p.openRegionDatabaseService(props)
 	if err != nil {
-		return p.errorReturn(err)
+		p.CloseDatabaseService()
+		return nil, err
 	}
 
 	// Assign the BusinessId
@@ -75,9 +77,13 @@ func NewAccessService(props utils.Map) (AccessService, error) {
 	// Initialize other Service
 	p.initializeService()
 
+	// Verify the given businessId is exist
 	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
+		err := &utils.AppError{
+			ErrorCode:   funcode + "01",
+			ErrorMsg:    "Invalid business_id",
+			ErrorDetail: "Given business_id is not exist"}
 		return p.errorReturn(err)
 	}
 
@@ -89,14 +95,33 @@ func NewAccessService(props utils.Map) (AccessService, error) {
 func (p *accessBaseService) EndService() {
 	log.Printf("EndAccessService ")
 	p.CloseDatabaseService()
+	p.regionDB.CloseDatabaseService()
+}
+
+func (p *accessBaseService) openRegionDatabaseService(props utils.Map) error {
+
+	// Get Region and Tenant Database Information
+	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return err
+	}
+
+	err = p.regionDB.OpenDatabaseService(regionProps)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *accessBaseService) initializeService() {
 	log.Printf("AccessService:: GetBusinessDao ")
-	p.daoAccess = business_repository.NewAccessDao(p.GetClient(), p.businessID)
-	p.daoUser = business_repository.NewUserDao(p.GetClient(), p.businessID)
-	p.daoRole = business_repository.NewRoleDao(p.GetClient(), p.businessID)
-	p.daoSite = business_repository.NewSiteDao(p.GetClient(), p.businessID)
+	p.daoAccess = business_repository.NewAccessDao(p.regionDB.GetClient(), p.businessID)
+	p.daoUser = business_repository.NewUserDao(p.regionDB.GetClient(), p.businessID)
+	p.daoRole = business_repository.NewRoleDao(p.regionDB.GetClient(), p.businessID)
+	p.daoSite = business_repository.NewSiteDao(p.regionDB.GetClient(), p.businessID)
+
 	p.daoSysUser = platform_repository.NewSysUserDao(p.GetClient())
 	p.daoSysRole = platform_repository.NewSysRoleDao(p.GetClient())
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())

@@ -23,14 +23,13 @@ type BusinessService interface {
 	BeginTransaction()
 	CommitTransaction()
 	RollbackTransaction()
-
-	initializeService()
 	EndService()
 }
 
 // BusinessService - Users Service structure
 type businessBaseService struct {
 	db_utils.DatabaseService
+	regionDB            db_utils.DatabaseService
 	daoBusiness         business_repository.BusinessDao
 	daoUser             business_repository.UserDao
 	daoContact          business_repository.ContactDao
@@ -49,41 +48,38 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 	log.Printf("BusinessService :: Start")
 
-	// Get Region and Tenant Database Information
-	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	// Verify whether the business id data passed
+	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return nil, err
 	}
 
 	p := businessBaseService{}
+	// Open Database Service
 	err = p.OpenDatabaseService(props)
 	if err != nil {
-		// log.Fatal(err)
 		log.Println("NewBusinessMongoService App Connection Error ", err)
 		return nil, err
 	}
-
-	// Verify whether the business id data passed
-	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
+	
+	// Open RegionDB Service
+	err = p.openRegionDatabaseService(props)
 	if err != nil {
-		return p.errorReturn(err)
+		p.CloseDatabaseService()
+		return nil, err
 	}
 
 	// Assign the BusinessId
 	p.businessID = businessId
-
-	// Initialize other Service
-	p.initializeAppService()
+	
+	// Initialise Services
+	p.initializeService()
 
 	_, err = p.daoPlatformBusiness.Get(businessId)
 	if err != nil {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
 		return p.errorReturn(err)
 	}
-
-	// Initialise Services
-	p.initializeService()
 
 	p.child = &p
 
@@ -94,19 +90,34 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 func (p *businessBaseService) EndService() {
 	log.Printf("EndBusinessMongoService ")
 	p.CloseDatabaseService()
+	p.regionDB.CloseDatabaseService()
+}
+
+func (p *businessBaseService) openRegionDatabaseService(props utils.Map) error {
+
+	// Get Region and Tenant Database Information
+	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return err
+	}
+
+	err = p.regionDB.OpenDatabaseService(regionProps)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *businessBaseService) initializeService() {
 	log.Printf("BusinessMongoService:: GetBusinessDao ")
-	p.daoBusiness = business_repository.NewBusinessDao(p.GetClient(), p.businessID)
-	p.daoUser = business_repository.NewUserDao(p.GetClient(), p.businessID)
-	p.daoContact = business_repository.NewContactDao(p.GetClient(), p.businessID)
-}
-
-func (p *businessBaseService) initializeAppService() {
-	log.Printf("BusinessMongoService:: GetBusinessDao ")
 	p.daoSysUser = platform_repository.NewSysUserDao(p.GetClient())
 	p.daoPlatformBusiness = platform_repository.NewBusinessDao(p.GetClient())
+
+	p.daoBusiness = business_repository.NewBusinessDao(p.regionDB.GetClient(), p.businessID)
+	p.daoUser = business_repository.NewUserDao(p.regionDB.GetClient(), p.businessID)
+	p.daoContact = business_repository.NewContactDao(p.regionDB.GetClient(), p.businessID)
 }
 
 // Create - Create Service

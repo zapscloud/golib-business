@@ -13,11 +13,6 @@ import (
 	"github.com/zapscloud/golib-utils/utils"
 )
 
-const (
-// // The character encoding for the email.
-// CharSet = "UTF-8"
-)
-
 // UserService - Users Service structure
 type UserService interface {
 	List(filter string, sort string, skip int64, limit int64) (utils.Map, error)
@@ -34,11 +29,11 @@ type UserService interface {
 	EndService()
 }
 
-// LoyaltyCardService - Users Service structure
+// userBaseService - Users Service structure
 type userBaseService struct {
 	db_utils.DatabaseService
-	daoUser business_repository.UserDao
-	// daoSysUser  platform_repository.SysUserDao
+	regionDB    db_utils.DatabaseService
+	daoUser     business_repository.UserDao
 	daoBusiness platform_repository.BusinessDao
 	child       UserService
 	businessID  string
@@ -50,24 +45,26 @@ func init() {
 
 func NewUserService(props utils.Map) (UserService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
+	log.Printf("UserService::Start ")
 
-	// Get Region and Tenant Database Information
-	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	// Verify whether the business id data passed
+	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return nil, err
 	}
 
 	p := userBaseService{}
+	// Open Database Service
 	err = p.OpenDatabaseService(props)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	log.Printf("UserMongoService ")
-	// Verify whether the business id data passed
-	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
+
+	// Open RegionDB Service
+	err = p.openRegionDatabaseService(props)
 	if err != nil {
-		return p.errorReturn(err)
+		p.CloseDatabaseService()
+		return nil, err
 	}
 
 	// Assign the BusinessId
@@ -76,7 +73,10 @@ func NewUserService(props utils.Map) (UserService, error) {
 
 	_, err = p.daoBusiness.Get(businessId)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
+		err := &utils.AppError{
+			ErrorCode:   funcode + "01",
+			ErrorMsg:    "Invalid business_id",
+			ErrorDetail: "Given business_id is not exist"}
 		return p.errorReturn(err)
 	}
 
@@ -85,16 +85,33 @@ func NewUserService(props utils.Map) (UserService, error) {
 	return &p, err
 }
 
-// EndLoyaltyCardService - Close all the services
+// UserBaseService - Close all the services
 func (p *userBaseService) EndService() {
 	log.Printf("EndUserService ")
 	p.CloseDatabaseService()
+	p.regionDB.CloseDatabaseService()
+}
+
+func (p *userBaseService) openRegionDatabaseService(props utils.Map) error {
+
+	// Get Region and Tenant Database Information
+	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return err
+	}
+
+	err = p.regionDB.OpenDatabaseService(regionProps)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *userBaseService) initializeService() {
 	log.Printf("UserService:: initializeService ")
-	p.daoUser = business_repository.NewUserDao(p.GetClient(), p.businessID)
-	// p.daoSysUser = platform_repository.NewSysUserDao(p.GetClient())
+	p.daoUser = business_repository.NewUserDao(p.regionDB.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 

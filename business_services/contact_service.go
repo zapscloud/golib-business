@@ -12,11 +12,6 @@ import (
 	"github.com/zapscloud/golib-utils/utils"
 )
 
-const (
-// // The character encoding for the email.
-// CharSet = "UTF-8"
-)
-
 // ContactService - Contacts Service structure
 type ContactService interface {
 	List(filter string, sort string, skip int64, limit int64) (utils.Map, error)
@@ -33,9 +28,10 @@ type ContactService interface {
 	EndService()
 }
 
-// LoyaltyCardService - Contacts Service structure
+// ContactBaseService - Contacts Service structure
 type contactBaseService struct {
 	db_utils.DatabaseService
+	regionDB    db_utils.DatabaseService
 	daoContact  business_repository.ContactDao
 	daoBusiness platform_repository.BusinessDao
 	child       ContactService
@@ -49,24 +45,25 @@ func init() {
 func NewContactService(props utils.Map) (ContactService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 
-	// Get Region and Tenant Database Information
-	props, err := platform_services.GetRegionAndTenantDBInfo(props)
-	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
-		return nil, err
-	}
-
-	p := contactBaseService{}
-	err = p.OpenDatabaseService(props)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("ContactMongoService ")
+	log.Printf("ContactMongoService::Start")
 
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		return p.errorReturn(err)
+		return nil, err
+	}
+
+	p := contactBaseService{}
+	// Open Database Service
+	err = p.OpenDatabaseService(props)
+	if err != nil {
+		return nil, err
+	}
+	// Open RegionDB Service
+	err = p.openRegionDatabaseService(props)
+	if err != nil {
+		p.CloseDatabaseService()
+		return nil, err
 	}
 
 	// Assign the BusinessId
@@ -86,15 +83,33 @@ func NewContactService(props utils.Map) (ContactService, error) {
 	return &p, err
 }
 
-// EndLoyaltyCardService - Close all the services
+// ContactBaseService - Close all the services
 func (p *contactBaseService) EndService() {
 	log.Printf("EndContactMongoService ")
 	p.CloseDatabaseService()
+	p.regionDB.CloseDatabaseService()
+}
+
+func (p *contactBaseService) openRegionDatabaseService(props utils.Map) error {
+
+	// Get Region and Tenant Database Information
+	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return err
+	}
+
+	err = p.regionDB.OpenDatabaseService(regionProps)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *contactBaseService) initializeService() {
 	log.Printf("ContactMongoService:: GetBusinessDao ")
-	p.daoContact = business_repository.NewContactDao(p.GetClient(), p.businessID)
+	p.daoContact = business_repository.NewContactDao(p.regionDB.GetClient(), p.businessID)
 	p.daoBusiness = platform_repository.NewBusinessDao(p.GetClient())
 }
 

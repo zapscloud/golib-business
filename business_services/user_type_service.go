@@ -32,6 +32,7 @@ type UserTypeService interface {
 // userTypeBaseService - Accounts Service structure
 type userTypeBaseService struct {
 	db_utils.DatabaseService
+	regionDB            db_utils.DatabaseService
 	daoUserType         business_repository.UserTypeDao
 	daoPlatformBusiness platform_repository.BusinessDao
 	child               UserTypeService
@@ -45,36 +46,42 @@ func init() {
 func NewUserTypeService(props utils.Map) (UserTypeService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 
-	// Get Region and Tenant Database Information
-	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	log.Printf("UserTypeService::Start ")
+
+	// Verify whether the business id data passed
+	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
 		return nil, err
 	}
 
 	p := userTypeBaseService{}
+
 	// Open Database Service
 	err = p.OpenDatabaseService(props)
 	if err != nil {
 		return nil, err
 	}
 
-	// Verify whether the business id data passed
-	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
+	// Open RegionDB Service
+	err = p.openRegionDatabaseService(props)
 	if err != nil {
-		return p.errorReturn(err)
+		p.CloseDatabaseService()
+		return nil, err
 	}
 
 	// Assign the BusinessId
 	p.businessID = businessId
 
 	// Instantiate other services
-	p.daoUserType = business_repository.NewUserTypeDao(p.GetClient(), p.businessID)
+	p.daoUserType = business_repository.NewUserTypeDao(p.regionDB.GetClient(), businessId)
 	p.daoPlatformBusiness = platform_repository.NewBusinessDao(p.GetClient())
 
 	_, err = p.daoPlatformBusiness.Get(p.businessID)
 	if err != nil {
-		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business id", ErrorDetail: "Given business id is not exist"}
+		err := &utils.AppError{
+			ErrorCode:   funcode + "01",
+			ErrorMsg:    "Invalid business id",
+			ErrorDetail: "Given business id is not exist"}
 		return p.errorReturn(err)
 	}
 
@@ -85,6 +92,24 @@ func NewUserTypeService(props utils.Map) (UserTypeService, error) {
 
 func (p *userTypeBaseService) EndService() {
 	p.CloseDatabaseService()
+	p.regionDB.CloseDatabaseService()
+}
+
+func (p *userTypeBaseService) openRegionDatabaseService(props utils.Map) error {
+
+	// Get Region and Tenant Database Information
+	regionProps, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return err
+	}
+
+	err = p.regionDB.OpenDatabaseService(regionProps)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // List - List All records
