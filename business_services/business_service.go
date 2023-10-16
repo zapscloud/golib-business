@@ -8,6 +8,7 @@ import (
 	"github.com/zapscloud/golib-business/business_repository"
 	"github.com/zapscloud/golib-dbutils/db_utils"
 	"github.com/zapscloud/golib-platform/platform_repository"
+	"github.com/zapscloud/golib-platform/platform_services"
 	"github.com/zapscloud/golib-utils/utils"
 )
 
@@ -46,16 +47,23 @@ func init() {
 // NewBusinessService - Construct Business Service
 func NewBusinessService(props utils.Map) (BusinessService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
+	log.Printf("BusinessService :: Start")
+
+	// Get Region and Tenant Database Information
+	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return nil, err
+	}
 
 	p := businessBaseService{}
-
-	err := p.OpenDatabaseService(props)
+	err = p.OpenDatabaseService(props)
 	if err != nil {
 		// log.Fatal(err)
 		log.Println("NewBusinessMongoService App Connection Error ", err)
 		return nil, err
 	}
-	log.Printf("BusinessService ")
+
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)
 	if err != nil {
@@ -73,58 +81,6 @@ func NewBusinessService(props utils.Map) (BusinessService, error) {
 		err := &utils.AppError{ErrorCode: funcode + "01", ErrorMsg: "Invalid business_id", ErrorDetail: "Given business_id is not exist"}
 		return p.errorReturn(err)
 	}
-
-	// businessRegion := dataBusiness[platform_common.FLD_BUSINESS_REGION_ID].(string)
-
-	// daoRegion := platform_repository.NewRegionDao(p.GetClient())
-	// dataRegion, err := daoRegion.Get(businessRegion)
-	// if err != nil {
-	// 	log.Println("NewBusinessService Get Region details Error ", err)
-	// 	return p.errorReturn(err)
-	// }
-
-	// if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_SERVER]; !dataok {
-	// 	err := &utils.AppError{ErrorCode: funcode + "02", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
-	// 	return p.errorReturn(err)
-	// } else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_NAME]; !dataok {
-	// 	err := &utils.AppError{ErrorCode: funcode + "03", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
-	// 	return p.errorReturn(err)
-	// } else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_USER]; !dataok {
-	// 	err := &utils.AppError{ErrorCode: funcode + "04", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
-	// 	return p.errorReturn(err)
-	// } else if _, dataok := dataRegion[platform_common.FLD_REGION_MONGODB_SECRET]; !dataok {
-	// 	err := &utils.AppError{ErrorCode: funcode + "05", ErrorMsg: "Missing MongoDB Value", ErrorDetail: "Missing MongoDB Values for the given region details"}
-	// 	return p.errorReturn(err)
-	// }
-
-	// dbtype := props[db_common.DB_TYPE].(db_common.DatabaseType)
-	// dbserver := dataRegion[platform_common.FLD_REGION_MONGODB_SERVER].(string)
-	// dbname := dataRegion[platform_common.FLD_REGION_MONGODB_NAME].(string)
-	// dbuser := dataRegion[platform_common.FLD_REGION_MONGODB_USER].(string)
-	// dbsecret := dataRegion[platform_common.FLD_REGION_MONGODB_SECRET].(string)
-
-	// if tenantdata, tenantok := dataBusiness[platform_common.FLD_BUSINESS_IS_TENANT_DB]; tenantok && tenantdata.(bool) {
-	// 	dbname = dataRegion[platform_common.FLD_REGION_MONGODB_NAME].(string) + "-" + businessId
-	// }
-
-	// // Prepare DBCredentials from the new Region Information
-	// props = utils.Map{
-	// 	db_common.DB_TYPE:   dbtype,
-	// 	db_common.DB_SERVER: dbserver,
-	// 	db_common.DB_NAME:   dbname,
-	// 	db_common.DB_USER:   dbuser,
-	// 	db_common.DB_SECRET: dbsecret}
-
-	// // Close Previously Opened driver
-	// p.CloseDatabaseService()
-
-	// // Open
-	// err = p.OpenDatabaseService(props)
-	// if err != nil {
-	// 	// log.Fatal(err)
-	// 	log.Println("NewBusinessService Connection Error ", err)
-	// 	return p.errorReturn(err)
-	// }
 
 	// Initialise Services
 	p.initializeService()

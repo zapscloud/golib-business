@@ -8,6 +8,7 @@ import (
 	"github.com/zapscloud/golib-business/business_repository"
 	"github.com/zapscloud/golib-dbutils/db_utils"
 	"github.com/zapscloud/golib-platform/platform_repository"
+	"github.com/zapscloud/golib-platform/platform_services"
 	"github.com/zapscloud/golib-utils/utils"
 )
 
@@ -47,14 +48,20 @@ func init() {
 
 func NewAccessService(props utils.Map) (AccessService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
+	log.Printf("AccessService :: Start")
+
+	// Get Region and Tenant Database Information
+	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return nil, err
+	}
 
 	p := accessBaseService{}
-
-	err := p.OpenDatabaseService(props)
+	err = p.OpenDatabaseService(props)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("AccessService ")
 
 	// Verify whether the business id data passed
 	businessId, err := utils.GetMemberDataStr(props, business_common.FLD_BUSINESS_ID)

@@ -8,6 +8,7 @@ import (
 	"github.com/zapscloud/golib-business/business_repository"
 	"github.com/zapscloud/golib-dbutils/db_utils"
 	"github.com/zapscloud/golib-platform/platform_repository"
+	"github.com/zapscloud/golib-platform/platform_services"
 	"github.com/zapscloud/golib-utils/utils"
 )
 
@@ -48,9 +49,15 @@ func init() {
 func NewSiteService(props utils.Map) (SiteService, error) {
 	funcode := business_common.GetServiceModuleCode() + "M" + "01"
 
-	p := siteBaseService{}
+	// Get Region and Tenant Database Information
+	props, err := platform_services.GetRegionAndTenantDBInfo(props)
+	if err != nil {
+		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
+		return nil, err
+	}
 
-	err := p.OpenDatabaseService(props)
+	p := siteBaseService{}
+	err = p.OpenDatabaseService(props)
 	if err != nil {
 		log.Fatal(err)
 	}
