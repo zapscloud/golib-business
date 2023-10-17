@@ -188,6 +188,6 @@ func (p *contactBaseService) Delete(contact_id string) error {
 
 func (p *contactBaseService) errorReturn(err error) (ContactService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

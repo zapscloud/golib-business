@@ -234,6 +234,6 @@ func (p *accessBaseService) RevokePermission(access_id string) error {
 
 func (p *accessBaseService) errorReturn(err error) (AccessService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

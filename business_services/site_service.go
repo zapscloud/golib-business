@@ -189,6 +189,6 @@ func (p *siteBaseService) Delete(site_id string) error {
 
 func (p *siteBaseService) errorReturn(err error) (SiteService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

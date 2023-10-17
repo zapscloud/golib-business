@@ -189,6 +189,6 @@ func (p *businessBaseService) Delete() error {
 
 func (p *businessBaseService) errorReturn(err error) (BusinessService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

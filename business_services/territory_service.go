@@ -190,6 +190,6 @@ func (p *territoryBaseService) Delete(territory_id string) error {
 
 func (p *territoryBaseService) errorReturn(err error) (TerritoryService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

@@ -206,6 +206,6 @@ func (p *roleBaseService) Delete(roleid string, delete_permanent bool) error {
 
 func (p *roleBaseService) errorReturn(err error) (RoleService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }

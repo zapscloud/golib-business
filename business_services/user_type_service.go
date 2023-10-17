@@ -197,6 +197,6 @@ func (p *userTypeBaseService) Delete(userTypeId string, delete_permanent bool) e
 
 func (p *userTypeBaseService) errorReturn(err error) (UserTypeService, error) {
 	// Close the Database Connection
-	p.CloseDatabaseService()
+	p.EndService()
 	return nil, err
 }
