@@ -60,7 +60,7 @@ func NewContactService(props utils.Map) (ContactService, error) {
 		return nil, err
 	}
 	// Open RegionDB Service
-	err = p.openRegionDatabaseService(props)
+	p.dbRegion, err = platform_services.OpenRegionDatabaseService(props)
 	if err != nil {
 		p.CloseDatabaseService()
 		return nil, err
@@ -88,23 +88,6 @@ func (p *contactBaseService) EndService() {
 	log.Printf("EndContactMongoService ")
 	p.CloseDatabaseService()
 	p.dbRegion.CloseDatabaseService()
-}
-
-func (p *contactBaseService) openRegionDatabaseService(props utils.Map) error {
-
-	// Get Region and Tenant Database Information
-	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
-	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
-		return err
-	}
-
-	err = p.dbRegion.OpenDatabaseService(propsRegion)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (p *contactBaseService) initializeService() {

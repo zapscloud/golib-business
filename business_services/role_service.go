@@ -61,7 +61,7 @@ func NewRoleService(props utils.Map) (RoleService, error) {
 	}
 
 	// Open RegionDB Service
-	err = p.openRegionDatabaseService(props)
+	p.dbRegion, err = platform_services.OpenRegionDatabaseService(props)
 	if err != nil {
 		p.CloseDatabaseService()
 		return nil, err
@@ -90,23 +90,6 @@ func (p *roleBaseService) EndService() {
 	log.Printf("EndRoleService ")
 	p.CloseDatabaseService()
 	p.dbRegion.CloseDatabaseService()
-}
-
-func (p *roleBaseService) openRegionDatabaseService(props utils.Map) error {
-
-	// Get Region and Tenant Database Information
-	propsRegion, err := platform_services.GetRegionAndTenantDBInfo(props)
-	if err != nil {
-		log.Println("GetRegionAndTenantDBInfo() ERROR", err)
-		return err
-	}
-
-	err = p.dbRegion.OpenDatabaseService(propsRegion)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (p *roleBaseService) initializeService() {
